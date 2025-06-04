@@ -4,6 +4,7 @@
   "description": "Um sistema inteligente para organização de arquivos e documentos, desenvolvido em HTML, CSS e JavaScript puro. Organize suas apresentações, projetos e pastas de forma visual e interativa.",
   "main": "dataManager.js",
   "scripts": {
+    "dev": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
