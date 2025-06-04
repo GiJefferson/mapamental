@@ -347,6 +347,37 @@ async function tentarCarregarDatabaseAutomatico() {
     }
 }
 
+function limparCache() {
+    if (apresentacoes.length === 0) {
+        uiRenderer.mostrarNotificacao('Cache já está vazio!', 'info');
+        return;
+    }
+    
+    const totalItens = apresentacoes.length;
+    
+    if (!confirm(`Isso irá limpar ${totalItens} apresentação(ões) da memória.\n\nO arquivo database.json NÃO será apagado da pasta.\n\nDeseja continuar?`)) {
+        return;
+    }
+    
+    // Limpar apenas os dados da memória
+    apresentacoes = [];
+    arquivosCarregados = [];
+    termoBuscaAtual = '';
+    
+    // Limpar também formulários e estados de edição
+    editandoId = null;
+    excluindoId = null;
+    customizandoId = null;
+    
+    // Re-renderizar interface
+    uiRenderer.renderizarCards();
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').style.display = 'none';
+    limparFormulario();
+    
+    uiRenderer.mostrarNotificacao(`Cache limpo! ${totalItens} apresentação(ões) removidas da memória.`, 'success');
+}
+
 // Inicialização principal
 window.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando Mapa Mental Organizacional v2.0...');
@@ -368,6 +399,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 window.aplicarCustomizacao = function() {
     dataManager.aplicarCustomizacao();
 };
+
+// Tornar a função global para compatibilidade com HTML
+window.limparCache = limparCache;
 
 // Exportar funções para uso nos outros módulos
 window.dataManager = {
@@ -391,6 +425,7 @@ window.dataManager = {
     mostrarDetalhes,
     voltarParaLista,
     limparFormulario,
+    limparCache,
     
     // Funções de banco de dados
     salvarDados,
