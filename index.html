@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Mental Organizacional v2.0</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Mapa Mental Organizacional</h1>
+            <p>Sistema inteligente para organização de arquivos e documentos</p>
+            <div class="status-info">
+                💾 <strong>Sistema Database.json</strong> | 
+                📊 <span id="contadorApresentacoes">0</span> apresentações
+            </div>
+            <div class="header-buttons">
+                <button onclick="tentarCarregarDatabase()" class="header-btn load-btn">
+                    📂 Carregar Database.json
+                </button>
+                <button onclick="salvarDados()" class="header-btn save-btn">
+                    💾 Salvar Database.json
+                </button>
+                <button onclick="exportarDados()" class="header-btn backup-btn">
+                    📤 Backup Adicional
+                </button>
+                <input type="file" id="databaseFileInput" accept=".json" style="display: none;" onchange="carregarDatabaseArquivo(event)">
+            </div>
+        </div>
+
+       <!-- Sistema de Busca -->
+				<div class="search-section">
+					<div class="search-header" onclick="toggleSearchSection()">
+						<div>
+							<h3>🔍 Sistema de Busca Avançado</h3>
+							<p class="search-subtitle">Clique para expandir os controles de busca</p>
+						</div>
+						<span class="toggle-icon" id="searchToggleIcon">🔽</span>
+					</div>
+					<div class="search-content" id="searchContent">
+						<div class="search-container">
+							<input type="text" id="searchInput" class="search-input" placeholder='🔍 Buscar em nome, descrição, pasta, arquivos... (use * para wildcards ou "aspas" para busca exata)'>
+							<button class="search-btn" onclick="executarBusca()">🔍 Buscar</button>
+							<button class="clear-search-btn" onclick="limparBusca()">✖️ Limpar</button>
+						</div>
+						<div class="search-help">
+							💡 <strong>Dicas:</strong> Use *termo* para buscar termo em qualquer lugar, TERMO* para começar com termo, "termo exato" para busca exata
+						</div>
+						<div class="search-results" id="searchResults"></div>
+					</div>
+				</div>
+
+        <!-- Seção 1: Importações - Minimizada por padrão -->
+        <div class="import-section">
+            <div class="import-header" onclick="toggleImportSection()">
+                <div>
+                    <h2 id="formTitle">📥 Importar Nova Apresentação</h2>
+                    <p class="import-subtitle">Clique para expandir o formulário</p>
+                </div>
+                <span class="toggle-icon" id="toggleIcon">🔽</span>
+            </div>
+            <div class="import-content" id="importContent">
+                <div class="import-form">
+                    <div class="form-group">
+                        <label for="nome">Nome da Apresentação <span style="color: #e53e3e;">*</span></label>
+                        <input type="text" id="nome" placeholder="Ex: Curso JavaScript Avançado" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="descricao">Descrição (Opcional)</label>
+                        <textarea id="descricao" rows="2" placeholder="Descreva o conteúdo desta apresentação..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="icone">Ícone (Opcional)</label>
+                        <select id="icone">
+                            <option value="📚">📚 Livro</option>
+                            <option value="💻">💻 Computador</option>
+                            <option value="🎓">🎓 Graduação</option>
+                            <option value="📁">📁 Pasta</option>
+                            <option value="🚀">🚀 Projeto</option>
+                            <option value="⚡">⚡ Rápido</option>
+                            <option value="🎯">🎯 Objetivo</option>
+                            <option value="🔥">🔥 Popular</option>
+                            <option value="🐍">🐍 Python</option>
+                            <option value="⚛️">⚛️ React</option>
+                            <option value="🎨">🎨 Design</option>
+                            <option value="📊">📊 Dados</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pasta">Nome da Pasta/Projeto (Opcional)</label>
+                        <input type="text" id="pasta" placeholder="Ex: Curso-JavaScript-2024">
+                    </div>
+                    <div class="form-group">
+                        <label for="caminhoBase">Caminho Base (Opcional)</label>
+                        <input type="text" id="caminhoBase" placeholder="Ex: C:\Projetos\ ou /home/user/projetos/">
+                        <small class="field-help">
+                            💡 Opcional: Defina onde seus projetos ficam para caminhos completos e links clicáveis
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <div class="icon-preview" id="iconPreview">📚</div>
+                        <button class="add-btn" id="submitBtn" onclick="adicionarApresentacao()">Adicionar</button>
+                        <button class="cancel-btn" id="cancelBtn" onclick="cancelarEdicao()" style="display: none;">Cancelar</button>
+                    </div>
+                </div>
+                
+                <div class="file-upload-section">
+                    <h4>📁 Carregar Pasta Completa (Opcional)</h4>
+                    <p class="upload-description">
+                        Selecione uma pasta completa para que o sistema mapeie toda a estrutura de pastas e subpastas.
+                    </p>
+                    <div class="upload-controls">
+                        <input type="file" id="fileInput" webkitdirectory directory multiple class="file-input">
+                        <button onclick="processarPasta()" class="process-btn">
+                            📂 Processar Pasta
+                        </button>
+                    </div>
+                    <div class="uploaded-files" id="uploadedFiles"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 2: Apresentação dos Cards -->
+        <div class="presentation-section" id="presentationSection">
+            <div class="presentation-header">
+                <h2 class="section-title">
+                    🎨 Suas Apresentações
+                </h2>
+                <div class="controls-container">
+                    <div class="view-controls">
+                        <button class="view-btn" onclick="mudarVisualizacao('grid')" data-view="grid">🔲 Grade</button>
+                        <button class="view-btn" onclick="mudarVisualizacao('list')" data-view="list">📋 Lista</button>
+                        <button class="view-btn active" onclick="mudarVisualizacao('compact')" data-view="compact">🗃️ Compacto</button>
+                    </div>
+                    <div class="action-controls">
+                        <button onclick="mostrarEstatisticas()" class="action-btn stats-btn">
+                            📊 Estatísticas
+                        </button>
+                        <button onclick="mostrarAjuda()" class="action-btn help-btn">
+                            ❓ Ajuda
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="cards-grid compact-view" id="cardsGrid">
+                <div class="empty-state">
+                    <h3>Nenhuma apresentação adicionada ainda</h3>
+                    <p>Use o formulário acima para adicionar sua primeira organização</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 3: Detalhes -->
+        <div class="details-section" id="detailsSection">
+            <button class="back-btn" onclick="voltarParaLista()">← Voltar para Lista</button>
+            <div class="details-header">
+                <div class="details-icon" id="detailsIcon">📚</div>
+                <div class="details-info">
+                    <h2 id="detailsTitle">Título da Apresentação</h2>
+                    <p class="details-description" id="detailsDescription">Descrição detalhada...</p>
+                </div>
+            </div>
+            <div class="folder-structure">
+                <h3 class="structure-title">
+                    📂 Estrutura de Pastas e Arquivos 
+                    <button class="refresh-btn" onclick="atualizarEstrutura()">🔄 Atualizar</button>
+                </h3>
+                <div class="folder-tree" id="folderTree">
+                    <!-- Estrutura será gerada dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>🗑️ Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja excluir esta apresentação? Esta ação não pode ser desfeita.</p>
+            <div class="modal-actions">
+                <button class="btn-confirm" onclick="confirmarExclusao()">Sim, Excluir</button>
+                <button class="btn-cancel" onclick="fecharModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup de Personalização -->
+    <div class="popup-backdrop" id="customizeBackdrop" onclick="fecharCustomizacao()"></div>
+    <div class="customize-popup" id="customizePopup">
+        <h3>🎨 Personalizar Apresentação</h3>
+        <p>Escolha uma cor de fundo:</p>
+        <div class="color-palette" id="colorPalette">
+            <div class="color-option" data-color="linear-gradient(135deg, #6f63d8, #8a9ff0, #5a3f8d)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #40ad71, #6abe90, #2c8b5a)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #ef5151, #f88383, #d02a2a)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #e57a2b, #f0a05c, #c65816)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #9069e0, #b395f3, #704bc0)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #34a4a0, #5cc6c0, #298885)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #3a8dd9, #66b0ec, #2773b9)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #8997ac, #b8c1d0, #5c6a80)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #222b3a, #3c485a, #12161f)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #f89fc1, #fdd0e0, #f372a6)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #7ac2f0, #aee0f8, #4da3e8)"></div>
+            <div class="color-option" data-color="linear-gradient(135deg, #f3dd6a, #fcf5aa, #e4b732)"></div>
+        </div>
+        
+        <div class="font-size-control">
+            <label>Tamanho do título:</label>
+            <input type="range" class="font-size-slider" id="fontSizeSlider" min="1" max="2" step="0.1" value="1.3">
+            <span id="fontSizeDisplay">1.3rem</span>
+        </div>
+        
+        <div class="popup-actions">
+            <button onclick="aplicarCustomizacao()" class="popup-btn apply-btn">
+                ✅ Aplicar
+            </button>
+            <button onclick="fecharCustomizacao()" class="popup-btn cancel-popup-btn">
+                ❌ Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- Notificação de cópia -->
+    <div class="copy-notification" id="copyNotification">
+        📋 Conteúdo copiado para área de transferência!
+    </div>
+
+    <!-- Scripts -->
+    <script src="dataManager.js"></script>
+    <script src="uiRenderer.js"></script>
+    <script src="utilityTools.js"></script>
+    
+    <!-- Atalho de teclado e scroll automático -->
+    <script>
+        // Scroll automático para o final da página
+        window.addEventListener("load", function () {
+            setTimeout(() => {
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 100);
+        });
+
+        // Atalho "S" para salvar database.json (implementado no uiRenderer.js)
+        
+        // Função auxiliar para atualizar estrutura (pode ser implementada futuramente)
+        function atualizarEstrutura() {
+            console.log('🔄 Função de atualizar estrutura chamada');
+            // Implementação futura se necessário
+        }
+    </script>
+</body>
+</html>
